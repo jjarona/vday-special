@@ -9,7 +9,6 @@
         :root {
             --primary: #ff4d6d;
             --bg: #fceef5;
-            --secondary: #c9184a;
         }
 
         body {
@@ -22,10 +21,10 @@
             min-height: 100vh;
             margin: 0;
             color: #d63384;
-            overflow: hidden;
+            overflow: hidden; /* Prevents scrollbars when button teleports */
         }
 
-        /* Loading Screen */
+        /* Loader */
         #loader {
             position: fixed;
             top: 0; left: 0;
@@ -42,8 +41,8 @@
         .heart { font-size: 50px; animation: pulse 1.5s infinite; color: var(--primary); }
         @keyframes pulse { 0% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.3); opacity: 1; } 100% { transform: scale(1); opacity: 0.5; } }
 
-        /* Puzzle Styling */
-        .container { text-align: center; padding: 20px; z-index: 1; }
+        /* Puzzle */
+        .container { text-align: center; padding: 20px; }
         #puzzle-board {
             display: grid;
             grid-template-columns: repeat(3, 100px);
@@ -62,7 +61,7 @@
         #reveal-msg, #itinerary { display: none; text-align: center; animation: fadeIn 1s forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        .btn-group { margin-top: 30px; position: relative; height: 100px; width: 300px; margin-left: auto; margin-right: auto; }
+        .btn-group { margin-top: 40px; }
         
         .btn {
             padding: 15px 40px;
@@ -70,12 +69,21 @@
             border-radius: 30px;
             cursor: pointer;
             border: none;
-            transition: 0.3s;
-            position: absolute;
+            transition: all 0.2s ease;
         }
 
-        .btn-yes { background: var(--primary); color: white; left: 10px; box-shadow: 0 5px 15px rgba(255, 77, 109, 0.4); }
-        .btn-no { background: #fff; color: var(--primary); border: 2px solid var(--primary); right: 10px; }
+        .btn-yes { 
+            background: var(--primary); 
+            color: white; 
+            box-shadow: 0 5px 15px rgba(255, 77, 109, 0.4); 
+        }
+
+        .btn-no { 
+            background: #fff; 
+            color: var(--primary); 
+            border: 2px solid var(--primary);
+            position: absolute; /* Allows teleporting across screen */
+        }
 
         /* Itinerary Card */
         #itinerary {
@@ -83,41 +91,42 @@
             padding: 30px;
             border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-            max-width: 400px;
+            max-width: 450px;
             line-height: 1.6;
+            margin: 0 20px;
         }
-        .itinerary-item { margin: 15px 0; font-size: 1.1rem; }
+        .itinerary-item { margin: 15px 0; font-size: 1.1rem; text-align: left; }
     </style>
 </head>
 <body>
 
     <div id="loader">
         <div class="heart">❤️</div>
-        <p>Thinking of you...</p>
+        <p>Almost there...</p>
     </div>
 
     <div class="container">
         <div id="header-text">
-            <h2>Solve the puzzle for a surprise...</h2>
+            <h2>Put the pieces together for a surprise...</h2>
         </div>
 
         <div id="puzzle-board"></div>
 
         <div id="reveal-msg">
-            <h1 style="font-size: 2.5rem;">Will you be my Valentine?</h1>
+            <h1 style="font-size: 2.5rem; margin-bottom: 40px;">Will you be my Valentine?</h1>
             <div class="btn-group">
                 <button class="btn btn-yes" onclick="showItinerary()">YES!</button>
-                <button class="btn btn-no" id="no-btn" onmouseover="moveNo()">No</button>
+                <button class="btn btn-no" id="no-btn" onmouseenter="moveNo()" onclick="moveNo()">No</button>
             </div>
         </div>
 
         <div id="itinerary">
-            <h1 style="color: var(--primary);">It's a Date! ❤️</h1>
-            <div class="itinerary-item">📍 <b>3:00 PM:</b> Pick you up from your house</div>
-            <div class="itinerary-item">🎨 <b>Afternoon:</b> NLB for Albatrox File Exhibition</div>
-            <div class="itinerary-item">🌊 <b>Sunset:</b> Romantic beach walk</div>
+            <h1 style="color: var(--primary); margin-bottom: 20px;">It's a Date! ❤️</h1>
+            <div class="itinerary-item">🏠 <b>3:00 PM:</b> Pick you up at your house</div>
+            <div class="itinerary-item">🎨 <b>Afternoon:</b> Head to NLB for Albatrox File Exhibition</div>
+            <div class="itinerary-item">🌊 <b>Sunset:</b> Head to the beach for a nice romantic walk</div>
             <div class="itinerary-item">🍽️ <b>8:00 PM:</b> Dinner at XXX Restaurant</div>
-            <p style="margin-top: 30px; font-style: italic;">I can't waittttt</p>
+            <p style="margin-top: 30px; font-weight: bold;">See you then! 😘</p>
         </div>
     </div>
 
@@ -153,7 +162,7 @@
         function swap(idx) {
             if (firstSelection === null) {
                 firstSelection = idx;
-                board.children[idx].classList.add('selected');
+                board.children[idx].style.outline = '5px solid #ff4d6d';
             } else {
                 const temp = currentOrder[firstSelection];
                 currentOrder[firstSelection] = currentOrder[idx];
@@ -176,11 +185,14 @@
         }
 
         function moveNo() {
-            const x = Math.random() * (window.innerWidth - noBtn.offsetWidth);
-            const y = Math.random() * (window.innerHeight - noBtn.offsetHeight);
+            // Generates coordinates anywhere in the visible window
+            const padding = 50; 
+            const newX = Math.random() * (window.innerWidth - noBtn.offsetWidth - padding);
+            const newY = Math.random() * (window.innerHeight - noBtn.offsetHeight - padding);
+            
             noBtn.style.position = 'fixed';
-            noBtn.style.left = x + 'px';
-            noBtn.style.top = y + 'px';
+            noBtn.style.left = `${newX}px`;
+            noBtn.style.top = `${newY}px`;
         }
 
         function showItinerary() {
