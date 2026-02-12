@@ -9,6 +9,7 @@
         :root {
             --primary: #ff4d6d;
             --bg: #fceef5;
+            --secondary: #c9184a;
         }
 
         body {
@@ -24,7 +25,7 @@
             overflow: hidden;
         }
 
-        /* Loading Screen Styles */
+        /* Loading Screen */
         #loader {
             position: fixed;
             top: 0; left: 0;
@@ -38,21 +39,11 @@
             transition: opacity 1s ease-out;
         }
 
-        .heart {
-            font-size: 50px;
-            animation: pulse 1.5s infinite;
-            color: var(--primary);
-        }
+        .heart { font-size: 50px; animation: pulse 1.5s infinite; color: var(--primary); }
+        @keyframes pulse { 0% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.3); opacity: 1; } 100% { transform: scale(1); opacity: 0.5; } }
 
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 0.5; }
-            50% { transform: scale(1.3); opacity: 1; }
-            100% { transform: scale(1); opacity: 0.5; }
-        }
-
-        /* Puzzle & Content Styles */
-        .container { text-align: center; padding: 20px; }
-
+        /* Puzzle Styling */
+        .container { text-align: center; padding: 20px; z-index: 1; }
         #puzzle-board {
             display: grid;
             grid-template-columns: repeat(3, 100px);
@@ -64,68 +55,83 @@
             box-shadow: 0 15px 35px rgba(214, 51, 132, 0.2);
             margin: 20px auto;
         }
-
-        .tile {
-            width: 100px; height: 133px;
-            background-size: 300px 532px;
-            cursor: pointer;
-            border-radius: 4px;
-            transition: transform 0.2s;
-        }
-
+        .tile { width: 100px; height: 133px; background-size: 300px 532px; cursor: pointer; border-radius: 4px; }
         .selected { outline: 5px solid var(--primary); z-index: 10; filter: brightness(1.1); }
 
-        #reveal-msg {
-            display: none;
-            text-align: center;
-        }
+        /* Reveal Section */
+        #reveal-msg, #itinerary { display: none; text-align: center; animation: fadeIn 1s forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        .yes-button {
-            background: var(--primary);
-            color: white;
-            border: none;
+        .btn-group { margin-top: 30px; position: relative; height: 100px; width: 300px; margin-left: auto; margin-right: auto; }
+        
+        .btn {
             padding: 15px 40px;
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             border-radius: 30px;
             cursor: pointer;
-            box-shadow: 0 5px 15px rgba(255, 77, 109, 0.4);
-            margin-top: 20px;
+            border: none;
+            transition: 0.3s;
+            position: absolute;
         }
+
+        .btn-yes { background: var(--primary); color: white; left: 10px; box-shadow: 0 5px 15px rgba(255, 77, 109, 0.4); }
+        .btn-no { background: #fff; color: var(--primary); border: 2px solid var(--primary); right: 10px; }
+
+        /* Itinerary Card */
+        #itinerary {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            max-width: 400px;
+            line-height: 1.6;
+        }
+        .itinerary-item { margin: 15px 0; font-size: 1.1rem; }
     </style>
 </head>
 <body>
 
     <div id="loader">
         <div class="heart">❤️</div>
-        <p>Setting things up for you...</p>
+        <p>Thinking of you...</p>
     </div>
 
     <div class="container">
         <div id="header-text">
-            <h2 style="font-weight: 300;">Solve the puzzle to see our memory...</h2>
+            <h2>Solve the puzzle for a surprise...</h2>
         </div>
 
         <div id="puzzle-board"></div>
 
         <div id="reveal-msg">
-            <h1 style="font-size: 2.5rem;">Will you be my Valentine? ❤️</h1>
-            <button class="yes-button" onclick="celebrate()">YES!</button>
+            <h1 style="font-size: 2.5rem;">Will you be my Valentine?</h1>
+            <div class="btn-group">
+                <button class="btn btn-yes" onclick="showItinerary()">YES!</button>
+                <button class="btn btn-no" id="no-btn" onmouseover="moveNo()">No</button>
+            </div>
+        </div>
+
+        <div id="itinerary">
+            <h1 style="color: var(--primary);">It's a Date! ❤️</h1>
+            <div class="itinerary-item">📍 <b>3:00 PM:</b> Pick you up from your house</div>
+            <div class="itinerary-item">🎨 <b>Afternoon:</b> NLB for Albatrox File Exhibition</div>
+            <div class="itinerary-item">🌊 <b>Sunset:</b> Romantic beach walk</div>
+            <div class="itinerary-item">🍽️ <b>8:00 PM:</b> Dinner at XXX Restaurant</div>
+            <p style="margin-top: 30px; font-style: italic;">I can't wait.</p>
         </div>
     </div>
 
     <script>
-        // Ensure this matches the filename you upload to GitHub
         const PHOTO_URL = "us.jpg"; 
-
         const board = document.getElementById('puzzle-board');
         const loader = document.getElementById('loader');
         const msg = document.getElementById('reveal-msg');
+        const itin = document.getElementById('itinerary');
         const header = document.getElementById('header-text');
+        const noBtn = document.getElementById('no-btn');
 
         let currentOrder = Array.from({length: 12}, (_, i) => i);
         const correctOrder = [...currentOrder];
-
-        // Shuffle
         currentOrder.sort(() => Math.random() - 0.5);
 
         let firstSelection = null;
@@ -169,21 +175,29 @@
             }
         }
 
-        function celebrate() {
-            confetti({
-                particleCount: 150,
-                spread: 70,
-                origin: { y: 0.6 },
-                colors: ['#ff4d6d', '#ffffff']
-            });
+        function moveNo() {
+            const x = Math.random() * (window.innerWidth - noBtn.offsetWidth);
+            const y = Math.random() * (window.innerHeight - noBtn.offsetHeight);
+            noBtn.style.position = 'fixed';
+            noBtn.style.left = x + 'px';
+            noBtn.style.top = y + 'px';
         }
 
-        // Hide loader once image is "ready"
+        function showItinerary() {
+            msg.style.display = 'none';
+            itin.style.display = 'block';
+            celebrate();
+        }
+
+        function celebrate() {
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#ff4d6d', '#ffffff'] });
+        }
+
         window.addEventListener('load', () => {
             setTimeout(() => {
                 loader.style.opacity = '0';
                 setTimeout(() => loader.style.display = 'none', 1000);
-            }, 1500); // Gives it a nice 1.5s "beat"
+            }, 1500);
         });
 
         initGame();
