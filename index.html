@@ -185,16 +185,22 @@
         }
 
         function moveNo() {
-            // Generates coordinates anywhere in the visible window
-            const padding = 50; 
-            const newX = Math.random() * (window.innerWidth - noBtn.offsetWidth - padding);
-            const newY = Math.random() * (window.innerHeight - noBtn.offsetHeight - padding);
+            // 1. Define a "Safe Zone" so it doesn't hit the very edge
+            const padding = 100; 
             
+            // 2. Calculate positions within the safe area
+            const newX = Math.floor(Math.random() * (window.innerWidth - noBtn.offsetWidth - padding)) + (padding / 2);
+            const newY = Math.floor(Math.random() * (window.innerHeight - noBtn.offsetHeight - padding)) + (padding / 2);
+            
+            // 3. Apply styles
             noBtn.style.position = 'fixed';
             noBtn.style.left = `${newX}px`;
             noBtn.style.top = `${newY}px`;
+            
+            // 4. Ensure it stays on the very top layer
+            noBtn.style.zIndex = '9999';
         }
-
+        
         function showItinerary() {
             msg.style.display = 'none';
             itin.style.display = 'block';
